@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8>
+    <title>Error</title>
+    <style>
+        body {
+            margin: 0;
+        }
+        
+        canvas {
+            width: 100%;
+            height: 100%
+        }
+    </style>
+</head>
+
+<body>
+    <script src="three.js"></script>
+    <script src="physi.js"></script>
+    <script>
+        var scene = new physijs.Scene('physijs_worker.js', {
+            gravity: {
+                x: 0,
+                y: 0,
+                z: -9.8
+            }
+        });
+
+        scene.background = new THREE.Color(0xbfd1e5); // Blue background
+
+
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Create lights
+        var lights = [];
+        lights[0] = new THREE.PointLight(0xffffff, 1, 0);
+        lights[1] = new THREE.PointLight(0xffffff, 1, 0);
+        lights[2] = new THREE.PointLight(0xffffff, 1, 0);
+
+        lights[0].position.set(0, 200, 0);
+        lights[1].position.set(100, 200, 100);
+        lights[2].position.set(-100, -200, -100);
+
+        scene.add(lights[0]);
+        scene.add(lights[1]);
+        scene.add(lights[2]);
+
+        camera.position.z = 50;
+        camera.position.y = -50
+        // camera.position.x = 6 * 5
+        camera.lookAt(0, 0, 0)
+
+        // Create floor
+        var geometry = new THREE.PlaneGeometry(300, 300);
+        var material = new THREE.MeshBasicMaterial({
+            color: 0x9ad34a // Green
+        });
+        var ground = new physijs.Plane(geometry, material);
+        scene.add(ground);
+
+
+        // Create a convex object (In my actual program, this is a convex shape)
+        var geometry = new THREE.BoxGeometry(50, 50, 50);
+        var material = new THREE.MeshPhongMaterial({
+            color: 0xb7b7b7 // Grey
+        });
+
+        // Create a convex
+        var box = new physijs.Convex(geometry, material, {
+            mass: 500
+        });
+
+        box.position.set(0, 0, 0)
+        scene.add(box);
+
+        // Set factors
+        box.physics.angular_factor.set(0, 0, 0)
+        box.physics.linear_factor.set(0, 0, 0)
+
+
+        var physics_framerate = 1000 / 60;
+
+        function onStep() {
+            renderer.render(scene, camera);
+            setTimeout(scene.step.bind(scene, physics_framerate / 1000, undefined, onStep), physics_framerate);
+        }
+        scene.step(physics_framerate / 1000, undefined, onStep);
+    </script>
+
+</body>
+
+</html>
